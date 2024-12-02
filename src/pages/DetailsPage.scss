@@ -1,0 +1,24 @@
+@import '../styles/variables.scss';
+
+.details-page {
+    background-color: $background-color;
+    color: $text-color;
+    padding: 20px;
+    text-align: center;
+
+    img {
+        max-width: 300px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    h1 {
+        color: $primary-color;
+        margin-bottom: 10px;
+    }
+
+    p {
+        margin: 5px 0;
+        font-size: 1.1rem;
+    }
+}

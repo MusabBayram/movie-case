@@ -1,0 +1,27 @@
+@import '../variables.scss';
+
+.details-card {
+    background-color: $card-background;
+    color: $text-color;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid $border-color;
+
+    h1 {
+        color: $primary-color;
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+    }
+
+    p {
+        font-size: 1rem;
+        line-height: 1.5;
+        margin-bottom: 10px;
+    }
+}
+
+.poster {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
