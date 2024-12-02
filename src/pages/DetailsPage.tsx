@@ -28,12 +28,21 @@ const DetailsPage: React.FC = () => {
 
     return (
         <div className="details-page">
-        <h1>{movie.Title}</h1>
-        <img src={movie.Poster} alt={movie.Title} />
-        <p>Year: {movie.Year}</p>
-        <p>Director: {movie.Director}</p>
-        <p>Genre: {movie.Genre}</p>
-        <p>Plot: {movie.Plot}</p>
+        <div className="details-header">
+            <img src={movie.Poster} alt={movie.Title} className="movie-poster" />
+            <div className="movie-info">
+            <h1>{movie.Title}</h1>
+            <p><strong>Year:</strong> {movie.Year}</p>
+            <p><strong>Director:</strong> {movie.Director}</p>
+            <p><strong>Actors:</strong> {movie.Actors}</p>
+            <p><strong>Genre:</strong> {movie.Genre}</p>
+            <p><strong>IMDb Rating:</strong> {movie.imdbRating}</p>
+            </div>
+        </div>
+        <div className="movie-plot">
+            <h2>Plot</h2>
+            <p>{movie.Plot}</p>
+        </div>
         </div>
     );
 };
