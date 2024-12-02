@@ -7,28 +7,45 @@ import './HomePage.scss';
 const HomePage: React.FC = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [searchTerm, setSearchTerm] = useState('Pokemon');
-  const [page, setPage] = useState(1); 
+  const [year, setYear] = useState(''); 
+  const [type, setType] = useState('');
+  const [page, setPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
 
   useEffect(() => {
     const fetchMovies = async () => {
       try {
         const response = await omdbApi.get('', {
-          params: { s: searchTerm, page }, // Arama terimi ve sayfa parametreleri
+          params: { 
+            s: searchTerm,
+            y: year || undefined, 
+            type: type || undefined, 
+            page,
+          },
         });
         setMovies(response.data.Search || []);
-        setTotalResults(parseInt(response.data.totalResults, 10));
+        setTotalResults(parseInt(response.data.totalResults, 10) || 0);
       } catch (error) {
         console.error('Error fetching movies:', error);
       }
     };
 
     fetchMovies();
-  }, [searchTerm, page]);
+  }, [searchTerm, year, type, page]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setPage(1); 
+    setPage(1);
+  };
+
+  const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setYear(e.target.value);
+    setPage(1);
+  };
+
+  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setType(e.target.value);
+    setPage(1);
   };
 
   const handleNextPage = () => {
@@ -45,8 +62,8 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="homepage">
-      <h1 className="title">Dark Themed Movie Explorer</h1>
-      
+      <h1 className="title">Movie Explorer</h1>
+
       {/* Arama Çubuğu */}
       <input
         type="text"
@@ -55,6 +72,23 @@ const HomePage: React.FC = () => {
         onChange={handleSearchChange}
         className="search-bar"
       />
+
+      {/* Yıl ve Tür Filtreleri */}
+      <div className="filters">
+        <input
+          type="number"
+          placeholder="Year"
+          value={year}
+          onChange={handleYearChange}
+          className="year-filter"
+        />
+        <select value={type} onChange={handleTypeChange} className="type-filter">
+          <option value="">All</option>
+          <option value="movie">Movies</option>
+          <option value="series">Series</option>
+          <option value="episode">Episodes</option>
+        </select>
+      </div>
 
       {/* Film Listesi */}
       <div className="movie-grid">
