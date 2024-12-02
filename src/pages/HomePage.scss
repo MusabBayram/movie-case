@@ -83,7 +83,7 @@
         width: 80%;
         max-width: 500px;
         border: 1px solid $border-color;
-        border-radius: 5px;
+        border-radius: 20px;
         background-color: $card-background;
         color: $text-color;
 
@@ -116,31 +116,34 @@
 
         .type-filter {
             padding: 10px;
-            width: 120px;
+            width: 220px;
             align-content: center;
-            justify-content: center;
+            justify-self: center;
             font-size: 1rem;
             background-color: $card-background;
             color: $text-color;
             border: 1px solid $border-color;
             border-radius: 5px;
 
-            /* İkonu özelleştiriyoruz */
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24'><path fill='%23e0e0e0' d='M7 10l5 5 5-5z'/></svg>");
-            background-repeat: no-repeat;
-            background-position: calc(100% - 10px) center;
-            /* Konumu ayarla */
-            background-size: 20px 20px;
-            /* Ok simgesinin boyutunu büyüttük */
-
             &:focus {
                 outline: none;
                 border-color: $primary-color;
             }
+        }
+    }
+
+    .rating-filter {
+        width: 150px;
+        padding: 10px;
+        font-size: 1rem;
+        background-color: $card-background;
+        color: $text-color;
+        border: 1px solid $border-color;
+        border-radius: 5px;
+
+        &:focus {
+            outline: none;
+            border-color: $primary-color;
         }
     }
 }

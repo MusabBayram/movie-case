@@ -1,32 +1,43 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface FiltersState {
-    selectedTypes: string[]; // Birden fazla tür seçimi
-    yearRange: { startYear: string; endYear: string }; // Yıl aralığı
-    minRating: string; // IMDb puanı
+    searchTerm: string;
+    selectedTypes: string[];
+    year: string;
+    minRating: number;
+    page: number;
 }
 
 const initialState: FiltersState = {
+    searchTerm: 'Pokemon',
     selectedTypes: [],
-    yearRange: { startYear: '', endYear: '' },
-    minRating: '',
+    year: '',
+    minRating: 0,
+    page: 1,
 };
 
 const filtersSlice = createSlice({
     name: 'filters',
     initialState,
     reducers: {
+        setSearchTerm(state, action: PayloadAction<string>) {
+            state.searchTerm = action.payload;
+        },
         setSelectedTypes(state, action: PayloadAction<string[]>) {
             state.selectedTypes = action.payload;
         },
-        setYearRange(state, action: PayloadAction<{ startYear: string; endYear: string }>) {
-            state.yearRange = action.payload;
+        setYear(state, action: PayloadAction<string>) {
+            state.year = action.payload;
         },
-        setMinRating(state, action: PayloadAction<string>) {
+        setMinRating(state, action: PayloadAction<number>) {
             state.minRating = action.payload;
+        },
+        setPage(state, action: PayloadAction<number>) {
+            state.page = action.payload;
         },
     },
 });
 
-export const { setSelectedTypes, setYearRange, setMinRating } = filtersSlice.actions;
+export const { setSearchTerm, setSelectedTypes, setYear, setMinRating, setPage } =
+    filtersSlice.actions;
 export default filtersSlice.reducer;
