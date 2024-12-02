@@ -4,21 +4,45 @@
     background-color: $background-color;
     color: $text-color;
     padding: 20px;
-    text-align: center;
 
-    img {
-        max-width: 300px;
-        border-radius: 8px;
+    .details-header {
+        display: flex;
+        gap: 20px;
         margin-bottom: 20px;
+
+        .movie-poster {
+            max-width: 300px;
+            border-radius: 8px;
+        }
+
+        .movie-info {
+            flex: 1;
+
+            h1 {
+                color: $primary-color;
+                margin-bottom: 10px;
+            }
+
+            p {
+                margin: 5px 0;
+                font-size: 1.1rem;
+
+                strong {
+                    color: $secondary-color;
+                }
+            }
+        }
     }
 
-    h1 {
-        color: $primary-color;
-        margin-bottom: 10px;
-    }
+    .movie-plot {
+        h2 {
+            color: $primary-color;
+            margin-bottom: 10px;
+        }
 
-    p {
-        margin: 5px 0;
-        font-size: 1.1rem;
+        p {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
     }
 }
