@@ -6,26 +6,31 @@ import './HomePage.scss';
 
 const HomePage: React.FC = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
+  const [searchTerm, setSearchTerm] = useState('Pokemon');
   const [page, setPage] = useState(1); 
-  const [totalResults, setTotalResults] = useState(0); // Toplam sonuç sayısı
+  const [totalResults, setTotalResults] = useState(0);
 
-useEffect(() => {
-  const fetchMovies = async () => {
-    try {
-      const response = await omdbApi.get('', {
-        params: { s: 'Pokemon', page },
-      });
-      setMovies(response.data.Search || []);
-      setTotalResults(parseInt(response.data.totalResults, 10));
-    } catch (error) {
-      console.error('Error fetching movies:', error);
-    }
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        const response = await omdbApi.get('', {
+          params: { s: searchTerm, page }, // Arama terimi ve sayfa parametreleri
+        });
+        setMovies(response.data.Search || []);
+        setTotalResults(parseInt(response.data.totalResults, 10));
+      } catch (error) {
+        console.error('Error fetching movies:', error);
+      }
+    };
+
+    fetchMovies();
+  }, [searchTerm, page]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPage(1); 
   };
 
-  fetchMovies();
-}, [page]);
-
-  // Sayfa değiştirme işlevleri
   const handleNextPage = () => {
     if (page < Math.ceil(totalResults / 10)) {
       setPage(page + 1);
@@ -40,7 +45,18 @@ useEffect(() => {
 
   return (
     <div className="homepage">
-      <h1 className="title">Movie Explorer</h1>
+      <h1 className="title">Dark Themed Movie Explorer</h1>
+      
+      {/* Arama Çubuğu */}
+      <input
+        type="text"
+        placeholder="Search for movies..."
+        value={searchTerm}
+        onChange={handleSearchChange}
+        className="search-bar"
+      />
+
+      {/* Film Listesi */}
       <div className="movie-grid">
         {movies.map((movie) => (
           <div key={movie.imdbID} className="movie-card">

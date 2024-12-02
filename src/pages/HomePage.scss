@@ -74,4 +74,22 @@
             color: $text-color;
         }
     }
+
+    .search-bar {
+        display: block;
+        margin: 0 auto 20px auto;
+        padding: 10px;
+        font-size: 1rem;
+        width: 80%;
+        max-width: 500px;
+        border: 1px solid $border-color;
+        border-radius: 5px;
+        background-color: $card-background;
+        color: $text-color;
+
+        &:focus {
+            outline: none;
+            border-color: $primary-color;
+        }
+    }
 }
