@@ -3,92 +3,181 @@ import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import omdbApi from '../api/omdbApi';
 import { RootState } from '../store/store';
-import { setMovies } from '../store/slices/moviesSlice';
-import { setPage } from '../store/slices/filtersSlice';
+import {
+  fetchMoviesStart,
+  fetchMoviesSuccess,
+  fetchMoviesFailure,
+} from '../store/slices/moviesSlice';
+import {
+  setSearchTerm,
+  setSelectedTypes,
+  setYear,
+  setMinRating,
+  setPage,
+} from '../store/slices/filtersSlice';
 import { Movie } from '../types/Movie';
-import _ from 'lodash';
 import './HomePage.scss';
 
-const PLACEHOLDER_IMAGE = "https://via.placeholder.com/300x450?text=No+Image";
+const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/300x450?text=No+Image';
+
+function useDebounce(value: string, delay: number) {
+  const [debouncedValue, setDebouncedValue] = React.useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 const HomePage: React.FC = () => {
   const dispatch = useDispatch();
 
-  const { movies, totalResults } = useSelector((state: RootState) => state.movies);
+  const { movies, totalResults, loading, error } = useSelector(
+    (state: RootState) => state.movies
+  );
   const { searchTerm, selectedTypes, year, minRating, page } = useSelector(
     (state: RootState) => state.filters
   );
 
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const debouncedYear = useDebounce(year, 300);
+
   useEffect(() => {
     const fetchMovies = async () => {
       try {
-        const allMovies: Movie[] = [];
-        let currentPage = 1;
-        let fetchedAll = false;
+        dispatch(fetchMoviesStart());
 
-        while (!fetchedAll /* && allMovies.length < 500 */) {
+        // Eğer minRating 0 veya boş ise, sadece mevcut sayfadaki filmlerin detaylarını alırız
+        if (!minRating || minRating === 0) {
+          // Sadece temel film bilgilerini alıyoruz
           const response = await omdbApi.get('', {
             params: {
-              s: searchTerm,
-              page: currentPage,
+              s: debouncedSearchTerm,
+              page,
               y: year || undefined,
-              type: selectedTypes.length === 1 ? selectedTypes[0] : undefined,
+              type:
+                selectedTypes.length === 1 ? selectedTypes[0] : undefined,
             },
           });
 
           if (response.data.Search) {
-            const movieDetailsPromises = response.data.Search.map(async (movie: Movie) => {
-              const movieDetails = await omdbApi.get('', { params: { i: movie.imdbID } });
-              return { ...movie, imdbRating: movieDetails.data.imdbRating || 'N/A' };
+            const movies = response.data.Search;
+
+            // Mevcut sayfadaki filmlerin detaylarını alıyoruz
+            const movieDetailsPromises = movies.map(async (movie: Movie) => {
+              const movieDetailsResponse = await omdbApi.get('', {
+                params: { i: movie.imdbID },
+              });
+              return { ...movie, ...movieDetailsResponse.data };
             });
 
-            const detailedMovies = await Promise.all(movieDetailsPromises);
+            const moviesWithDetails = await Promise.all(movieDetailsPromises);
 
-            // IMDb puanına göre filtreleme
-            const filteredMovies = detailedMovies.filter((movie: Movie) => {
-              const rating = movie.imdbRating ? parseFloat(movie.imdbRating) : 0; 
-              const minRatingNumber = minRating || 0;
-
-              if (isNaN(rating)) {
-                return minRatingNumber === 0;
-              } else {
-                return rating >= minRatingNumber;
-              }
-            });
-
-            allMovies.push(...filteredMovies);
-
-            // Toplam sonuç sayısını güncelleyin
-            const totalResultsFromAPI = parseInt(response.data.totalResults, 10) || 0;
-            const totalPages = Math.ceil(totalResultsFromAPI / 10);
-
-            if (currentPage >= totalPages) {
-              fetchedAll = true;
-            } else {
-              currentPage += 1;
-            }
+            dispatch(
+              fetchMoviesSuccess({
+                movies: moviesWithDetails,
+                totalResults: parseInt(response.data.totalResults, 10) || 0,
+              })
+            );
           } else {
-            fetchedAll = true;
+            dispatch(
+              fetchMoviesSuccess({
+                movies: [],
+                totalResults: 0,
+              })
+            );
           }
+        } else {
+          // minRating > 0 ise, tüm filmleri alıp IMDb puanına göre filtreleriz
+          const allMovies: Movie[] = [];
+          let currentPage = 1;
+          let fetchedAll = false;
+          const MAX_PAGES = 50; // Maksimum sayfa sayısı (isteğe bağlı olarak ayarlanabilir)
+
+          while (!fetchedAll && currentPage <= MAX_PAGES) {
+            const response = await omdbApi.get('', {
+              params: {
+                s: debouncedSearchTerm,
+                page: currentPage,
+                y: year || undefined,
+                type:
+                  selectedTypes.length === 1 ? selectedTypes[0] : undefined,
+              },
+            });
+
+            if (response.data.Search) {
+              const movies = response.data.Search;
+
+              // Her film için detayları alıyoruz
+              const movieDetailsPromises = movies.map(async (movie: Movie) => {
+                const movieDetailsResponse = await omdbApi.get('', {
+                  params: { i: movie.imdbID },
+                });
+                return { ...movie, ...movieDetailsResponse.data };
+              });
+
+              const moviesWithDetails = await Promise.all(
+                movieDetailsPromises
+              );
+
+              allMovies.push(...moviesWithDetails);
+
+              const totalResultsFromAPI =
+                parseInt(response.data.totalResults, 10) || 0;
+              const totalPages = Math.ceil(totalResultsFromAPI / 10);
+
+              if (currentPage >= totalPages) {
+                fetchedAll = true;
+              } else {
+                currentPage += 1;
+              }
+            } else {
+              fetchedAll = true;
+            }
+          }
+
+          // IMDb puanına göre filtreleme
+          const filteredMovies = allMovies.filter((movie: Movie) => {
+            const rating = parseFloat(movie.imdbRating || '0');
+            return rating >= minRating;
+          });
+
+          // Filtrelenmiş filmleri sayfalandırıyoruz
+          const moviesPerPage = 10;
+          const paginatedMovies = filteredMovies.slice(
+            (page - 1) * moviesPerPage,
+            page * moviesPerPage
+          );
+
+          dispatch(
+            fetchMoviesSuccess({
+              movies: paginatedMovies,
+              totalResults: filteredMovies.length,
+            })
+          );
         }
-
-        // Sayfalandırma için filmleri bölün
-        const moviesPerPage = 10;
-        const paginatedMovies = allMovies.slice((page - 1) * moviesPerPage, page * moviesPerPage);
-
-        dispatch(
-          setMovies({
-            movies: paginatedMovies,
-            totalResults: allMovies.length,
-          })
-        );
       } catch (error) {
+        dispatch(fetchMoviesFailure('Error fetching movies'));
         console.error('Error fetching movies:', error);
       }
     };
 
     fetchMovies();
-  }, [searchTerm, selectedTypes, year, minRating, page, dispatch]);
+  }, [
+    debouncedSearchTerm,
+    selectedTypes,
+    debouncedYear,
+    minRating,
+    page,
+    dispatch,
+  ]);
 
   // Sayfa sayısı hesaplaması
   const moviesPerPage = 10;
@@ -116,24 +205,19 @@ const HomePage: React.FC = () => {
         type="text"
         placeholder="Search for movies..."
         value={searchTerm}
-        onChange={(e) => dispatch({ type: 'filters/setSearchTerm', payload: e.target.value })}
+        onChange={(e) => dispatch(setSearchTerm(e.target.value))}
         className="search-bar"
       />
 
       {/* Filtreler */}
       <div className="filters">
-          <input
-            type="number"
-            placeholder="Year"
-            value={year}
-            onChange={(e) =>
-              dispatch({
-                type: 'filters/setYear',
-                payload: e.target.value,
-              })
-            }
-            className="year-filter"
-          />
+        <input
+          type="number"
+          placeholder="Year"
+          value={year}
+          onChange={(e) => dispatch(setYear(e.target.value))}
+          className="year-filter"
+        />
 
         <div className="type-filter">
           {['movie', 'series', 'episode'].map((type) => (
@@ -143,12 +227,13 @@ const HomePage: React.FC = () => {
                 value={type}
                 checked={selectedTypes.includes(type)}
                 onChange={() =>
-                  dispatch({
-                    type: 'filters/setSelectedTypes',
-                    payload: selectedTypes.includes(type)
-                      ? selectedTypes.filter((t) => t !== type)
-                      : [...selectedTypes, type],
-                  })
+                  dispatch(
+                    setSelectedTypes(
+                      selectedTypes.includes(type)
+                        ? selectedTypes.filter((t) => t !== type)
+                        : [...selectedTypes, type]
+                    )
+                  )
                 }
               />
               {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -156,48 +241,76 @@ const HomePage: React.FC = () => {
           ))}
         </div>
 
+        {/* Min IMDb Rating filtresi */}
         <input
           type="number"
           step="0.1"
           placeholder="Min IMDb Rating"
           value={minRating}
           onChange={(e) =>
-            dispatch({ type: 'filters/setMinRating', payload: parseFloat(e.target.value) || 0 })
+            dispatch(setMinRating(parseFloat(e.target.value) || 0))
           }
           className="rating-filter"
         />
       </div>
 
-      {/* Film Listesi */}
-      <div className="movie-grid">
-        {movies.map((movie: Movie) => (
-          <div key={movie.imdbID} className="movie-card">
-            <Link to={`/details/${movie.imdbID}`}>
-              <img
-                src={movie.Poster !== 'N/A' ? movie.Poster : PLACEHOLDER_IMAGE}
-                alt={movie.Title || 'No Title'}
-                className="movie-poster"
-              />
-              <h2 className="movie-title">{movie.Title || 'No Title Available'}</h2>
-              <p className="movie-year">{movie.Year || 'Unknown Year'}</p>
-              <p className="movie-rating">IMDb: {movie.imdbRating || 'N/A'}</p>
-            </Link>
-          </div>
-        ))}
-      </div>
+      {/* Yükleme Göstergesi veya Hata Mesajı */}
+      {loading ? (
+        <p>Loading movies...</p>
+      ) : error ? (
+        <p>{error}</p>
+      ) : (
+        <>
+          {/* Film Listesi */}
+          {movies.length === 0 ? (
+            <p>No movies found for the selected filters.</p>
+          ) : (
+            <div className="movie-grid">
+              {movies.map((movie: Movie) => (
+                <div key={movie.imdbID} className="movie-card">
+                  <Link to={`/details/${movie.imdbID}`}>
+                    <img
+                      src={
+                        movie.Poster !== 'N/A'
+                          ? movie.Poster
+                          : PLACEHOLDER_IMAGE
+                      }
+                      alt={movie.Title || 'No Title'}
+                      className="movie-poster"
+                    />
+                    <h2 className="movie-title">
+                      {movie.Title || 'No Title Available'}
+                    </h2>
+                    <p className="movie-year">
+                      {movie.Year || 'Unknown Year'}
+                    </p>
+                    {/* IMDb Puanını gösteriyoruz */}
+                    <p className="movie-rating">
+                      IMDb: {movie.imdbRating || 'N/A'}
+                    </p>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
 
-      {/* Sayfalandırma Kontrolleri */}
-      <div className="pagination-controls">
-        <button onClick={handlePrevPage} disabled={page === 1}>
-          Previous
-        </button>
-        <span>
-          Page {page} of {totalPages}
-        </span>
-        <button onClick={handleNextPage} disabled={page >= totalPages}>
-          Next
-        </button>
-      </div>
+          {/* Sayfalandırma Kontrolleri */}
+          <div className="pagination-controls">
+            <button onClick={handlePrevPage} disabled={page === 1}>
+              Previous
+            </button>
+            <span>
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={handleNextPage}
+              disabled={page >= totalPages}
+            >
+              Next
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 };

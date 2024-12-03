@@ -38,6 +38,5 @@ const filtersSlice = createSlice({
     },
 });
 
-export const { setSearchTerm, setSelectedTypes, setYear, setMinRating, setPage } =
-    filtersSlice.actions;
+export const { setSearchTerm, setSelectedTypes, setYear, setMinRating, setPage } = filtersSlice.actions;
 export default filtersSlice.reducer;

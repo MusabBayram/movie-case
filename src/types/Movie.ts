@@ -4,5 +4,6 @@ export interface Movie {
     Year: string;
     Poster: string;
     Type: string;
-    imdbRating?: string; // IMDb puanı opsiyonel
+    imdbRating?: string;
+    [key: string]: any; // Diğer detaylı bilgiler için
 }
