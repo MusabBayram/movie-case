@@ -16,6 +16,7 @@ import {
   setPage,
 } from '../store/slices/filtersSlice';
 import { Movie } from '../types/Movie';
+import _ from 'lodash'; // Lodash'ı import ediyoruz
 import './HomePage.scss';
 
 const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/300x450?text=No+Image';
@@ -24,12 +25,14 @@ function useDebounce(value: string, delay: number) {
   const [debouncedValue, setDebouncedValue] = React.useState(value);
 
   useEffect(() => {
-    const handler = setTimeout(() => {
+    const handler = _.debounce(() => {
       setDebouncedValue(value);
     }, delay);
 
+    handler();
+
     return () => {
-      clearTimeout(handler);
+      handler.cancel();
     };
   }, [value, delay]);
 
@@ -61,7 +64,7 @@ const HomePage: React.FC = () => {
             params: {
               s: debouncedSearchTerm,
               page,
-              y: year || undefined,
+              y: debouncedYear || undefined,
               type:
                 selectedTypes.length === 1 ? selectedTypes[0] : undefined,
             },
@@ -71,14 +74,24 @@ const HomePage: React.FC = () => {
             const movies = response.data.Search;
 
             // Mevcut sayfadaki filmlerin detaylarını alıyoruz
-            const movieDetailsPromises = movies.map(async (movie: Movie) => {
-              const movieDetailsResponse = await omdbApi.get('', {
-                params: { i: movie.imdbID },
-              });
-              return { ...movie, ...movieDetailsResponse.data };
-            });
+            const movieDetailsPromises: Promise<Movie>[] = movies.map(
+              async (movie: Movie): Promise<Movie> => {
+                const movieDetailsResponse = await omdbApi.get('', {
+                  params: { i: movie.imdbID },
+                });
+                return { ...movie, ...movieDetailsResponse.data };
+              }
+            );
 
-            const moviesWithDetails = await Promise.all(movieDetailsPromises);
+            // İstekleri gruplandırıyoruz (örneğin 5'erli)
+            const movieDetailsChunks = _.chunk(movieDetailsPromises, 5);
+
+            // Detayları paralel olarak ama gruplandırılmış şekilde alıyoruz
+            const moviesWithDetails: Movie[] = [];
+            for (const chunk of movieDetailsChunks) {
+              const results = await Promise.all(chunk);
+              moviesWithDetails.push(...results);
+            }
 
             dispatch(
               fetchMoviesSuccess({
@@ -106,7 +119,7 @@ const HomePage: React.FC = () => {
               params: {
                 s: debouncedSearchTerm,
                 page: currentPage,
-                y: year || undefined,
+                y: debouncedYear || undefined,
                 type:
                   selectedTypes.length === 1 ? selectedTypes[0] : undefined,
               },
@@ -116,18 +129,22 @@ const HomePage: React.FC = () => {
               const movies = response.data.Search;
 
               // Her film için detayları alıyoruz
-              const movieDetailsPromises = movies.map(async (movie: Movie) => {
-                const movieDetailsResponse = await omdbApi.get('', {
-                  params: { i: movie.imdbID },
-                });
-                return { ...movie, ...movieDetailsResponse.data };
-              });
-
-              const moviesWithDetails = await Promise.all(
-                movieDetailsPromises
+              const movieDetailsPromises: Promise<Movie>[] = movies.map(
+                async (movie: Movie): Promise<Movie> => {
+                  const movieDetailsResponse = await omdbApi.get('', {
+                    params: { i: movie.imdbID },
+                  });
+                  return { ...movie, ...movieDetailsResponse.data };
+                }
               );
 
-              allMovies.push(...moviesWithDetails);
+              // İstekleri gruplandırıyoruz (örneğin 10'arlı)
+              const movieDetailsChunks = _.chunk(movieDetailsPromises, 10);
+
+              for (const chunk of movieDetailsChunks) {
+                const results: Movie[] = await Promise.all(chunk);
+                allMovies.push(...results);
+              }
 
               const totalResultsFromAPI =
                 parseInt(response.data.totalResults, 10) || 0;
@@ -144,14 +161,21 @@ const HomePage: React.FC = () => {
           }
 
           // IMDb puanına göre filtreleme
-          const filteredMovies = allMovies.filter((movie: Movie) => {
+          const filteredMovies = _.filter(allMovies, (movie: Movie) => {
             const rating = parseFloat(movie.imdbRating || '0');
             return rating >= minRating;
           });
 
-          // Filtrelenmiş filmleri sayfalandırıyoruz
+          // Filtrelenmiş ve sıralanmış filmleri IMDb puanına göre sıralıyoruz (yüksekten düşüğe)
+          const sortedMovies = _.orderBy(
+            filteredMovies,
+            [(movie: Movie) => parseFloat(movie.imdbRating || '0')],
+            ['desc']
+          );
+
+          // Filtrelenmiş ve sıralanmış filmleri sayfalandırıyoruz
           const moviesPerPage = 10;
-          const paginatedMovies = filteredMovies.slice(
+          const paginatedMovies = sortedMovies.slice(
             (page - 1) * moviesPerPage,
             page * moviesPerPage
           );
@@ -159,7 +183,7 @@ const HomePage: React.FC = () => {
           dispatch(
             fetchMoviesSuccess({
               movies: paginatedMovies,
-              totalResults: filteredMovies.length,
+              totalResults: sortedMovies.length,
             })
           );
         }
@@ -230,13 +254,13 @@ const HomePage: React.FC = () => {
                   dispatch(
                     setSelectedTypes(
                       selectedTypes.includes(type)
-                        ? selectedTypes.filter((t) => t !== type)
+                        ? _.without(selectedTypes, type)
                         : [...selectedTypes, type]
                     )
                   )
                 }
               />
-              {type.charAt(0).toUpperCase() + type.slice(1)}
+              {_.startCase(type)}
             </label>
           ))}
         </div>
@@ -302,10 +326,7 @@ const HomePage: React.FC = () => {
             <span>
               Page {page} of {totalPages}
             </span>
-            <button
-              onClick={handleNextPage}
-              disabled={page >= totalPages}
-            >
+            <button onClick={handleNextPage} disabled={page >= totalPages}>
               Next
             </button>
           </div>
