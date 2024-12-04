@@ -51,7 +51,7 @@ const HomePage: React.FC = () => {
   const [darkMode, setDarkMode] = useState(false);
 
 useEffect(() => {
-  const savedTheme = localStorage.getItem('theme') || 'light'; // Varsayılan 'light'
+  const savedTheme = localStorage.getItem('theme') || 'light'; 
   setDarkMode(savedTheme === 'dark');
   const body = document.body;
   if (savedTheme === 'dark') {
@@ -93,9 +93,9 @@ useEffect(() => {
       try {
         dispatch(fetchMoviesStart());
 
-        // Eğer minRating 0 veya boş ise, sadece mevcut sayfadaki filmlerin detaylarını alırız
+        // Eğer minRating 0 veya boş ise, sadece mevcut sayfadaki filmlerin detaylarını al
         if (!minRating || minRating === 0) {
-          // Sadece temel film bilgilerini alıyoruz
+          // Sadece temel film bilgilerini al
           const response = await omdbApi.get('', {
             params: {
               s: debouncedSearchTerm,
@@ -109,7 +109,7 @@ useEffect(() => {
           if (response.data.Search) {
             const movies = response.data.Search;
 
-            // Mevcut sayfadaki filmlerin detaylarını alıyoruz
+            // Mevcut sayfadaki filmlerin detaylarını al
             const movieDetailsPromises: Promise<Movie>[] = movies.map(
               async (movie: Movie): Promise<Movie> => {
                 const movieDetailsResponse = await omdbApi.get('', {
@@ -119,10 +119,10 @@ useEffect(() => {
               }
             );
 
-            // İstekleri gruplandırıyoruz (örneğin 5'erli)
+            // İstekleri gruplandır
             const movieDetailsChunks = _.chunk(movieDetailsPromises, 5);
 
-            // Detayları paralel olarak ama gruplandırılmış şekilde alıyoruz
+            // Detayları paralel olarak ama gruplandırılmış şekilde al
             const moviesWithDetails: Movie[] = [];
             for (const chunk of movieDetailsChunks) {
               const results = await Promise.all(chunk);
@@ -144,11 +144,11 @@ useEffect(() => {
             );
           }
         } else {
-          // minRating > 0 ise, tüm filmleri alıp IMDb puanına göre filtreleriz
+          // minRating > 0 ise, tüm filmleri alıp IMDb puanına göre filtrele
           const allMovies: Movie[] = [];
           let currentPage = 1;
           let fetchedAll = false;
-          const MAX_PAGES = 50; // Maksimum sayfa sayısı (isteğe bağlı olarak ayarlanabilir)
+          const MAX_PAGES = 50;
 
           while (!fetchedAll && currentPage <= MAX_PAGES) {
             const response = await omdbApi.get('', {
@@ -164,7 +164,7 @@ useEffect(() => {
             if (response.data.Search) {
               const movies = response.data.Search;
 
-              // Her film için detayları alıyoruz
+              // Her film için detayları al
               const movieDetailsPromises: Promise<Movie>[] = movies.map(
                 async (movie: Movie): Promise<Movie> => {
                   const movieDetailsResponse = await omdbApi.get('', {
@@ -174,7 +174,7 @@ useEffect(() => {
                 }
               );
 
-              // İstekleri gruplandırıyoruz (örneğin 10'arlı)
+              // İstekleri gruplandır
               const movieDetailsChunks = _.chunk(movieDetailsPromises, 10);
 
               for (const chunk of movieDetailsChunks) {
@@ -202,14 +202,14 @@ useEffect(() => {
             return rating >= minRating;
           });
 
-          // Filtrelenmiş ve sıralanmış filmleri IMDb puanına göre sıralıyoruz (yüksekten düşüğe)
+          // Filtrelenmiş ve sıralanmış filmleri IMDb puanına göre sırala
           const sortedMovies = _.orderBy(
             filteredMovies,
             [(movie: Movie) => parseFloat(movie.imdbRating || '0')],
             ['desc']
           );
 
-          // Filtrelenmiş ve sıralanmış filmleri sayfalandırıyoruz
+          // Filtrelenmiş ve sıralanmış filmleri sayfalandır
           const moviesPerPage = 10;
           const paginatedMovies = sortedMovies.slice(
             (page - 1) * moviesPerPage,
@@ -239,11 +239,9 @@ useEffect(() => {
     dispatch,
   ]);
 
-  // Sayfa sayısı hesaplaması
   const moviesPerPage = 10;
   const totalPages = Math.ceil(totalResults / moviesPerPage);
 
-  // Sayfa geçiş fonksiyonları
   const handleNextPage = () => {
     if (page < totalPages) {
       dispatch(setPage(page + 1));
@@ -282,7 +280,7 @@ useEffect(() => {
           className="year-filter"
         />
 
-        {/* Material-UI Filtreleme */}
+        {/* Material-UI Tip Filtreleme */}
         <FormGroup row>
           {['movie', 'series', 'episode'].map((type) => (
             <FormControlLabel

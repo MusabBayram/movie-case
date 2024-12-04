@@ -68,10 +68,6 @@ npm run build
 
 Bu komut, projeyi optimize edilmiş bir şekilde `build` klasörüne aktarır.
 
-## Katkıda Bulunma
-
-Katkıda bulunmak isterseniz bir pull request gönderebilir veya bir issue açabilirsiniz.
-
 ## Lisans
 
 Bu proje MIT lisansı altında yayınlanmıştır. Daha fazla bilgi için `LICENSE` dosyasına göz atabilirsiniz.
@@ -145,10 +141,6 @@ npm run build
 ```
 
 This command optimizes the project and outputs it to the `build` folder.
-
-## Contributing
-
-If you'd like to contribute, you can submit a pull request or open an issue.
 
 ## License
 

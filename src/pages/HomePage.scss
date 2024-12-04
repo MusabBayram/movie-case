@@ -30,11 +30,11 @@
         height: 420px;
         padding: 15px;
         text-align: center;
-        text-decoration: none; // Alt çizgiyi kaldır
-        color: var(--text-color); // Metin rengini ayarla
+        text-decoration: none;
+        color: var(--text-color);
 
         &:hover {
-            background-color: var(--card-background-hover); // İsteğe bağlı hover efekti
+            background-color: var(--card-background-hover);
         }
 
         img {
@@ -93,7 +93,7 @@
         }
 
         svg {
-            font-size: 24px; // Icon boyutu
+            font-size: 24px;
         }
     }
 
@@ -118,7 +118,6 @@
     .filters {
         display: flex;
         flex-wrap: wrap;
-        /* Esnek bir düzen için wrap ekleyin */
         justify-content: flex-end;
         gap: 20px;
         margin-bottom: 20px;
@@ -143,22 +142,17 @@
         /* Responsive tasarım */
         @media (max-width: 768px) {
             justify-content: center;
-            /* Mobilde ortala */
             gap: 10px;
-            /* Daha az boşluk bırak */
 
             .year-filter,
             .rating-filter {
                 width: 80%;
-                /* Mobilde daha geniş yap */
             }
 
             .type-filter {
                 flex: 1 1 100%;
-                /* Tüm genişliği kapla */
                 display: flex;
                 justify-content: space-around;
-                /* Kutuları hizala */
             }
         }
     }
