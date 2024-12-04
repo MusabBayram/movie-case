@@ -1,46 +1,155 @@
-# Getting Started with Create React App
+# Movie Explorer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**Türkçe | [English](#english)**
 
-## Available Scripts
+Movie Explorer, OMDb API'sini kullanarak film ve diziler hakkında bilgi alabileceğiniz bir React projesidir. Kullanıcılar, arama yaparak veya filtreleme seçeneklerini kullanarak istedikleri içerikleri kolayca bulabilir.
 
-In the project directory, you can run:
+## Özellikler
 
-### `npm start`
+- **Arama Özelliği**: Film ve dizileri isimlerine göre arayabilirsiniz.
+- **Filtreleme**: Tür, yıl ve IMDb puanına göre içerikleri filtreleyebilirsiniz.
+- **Karanlık / Aydınlık Tema**: Kullanıcı dostu bir tema seçeneği sunar.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Gereksinimler
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Bu projeyi çalıştırmak için aşağıdaki yazılımların bilgisayarınızda kurulu olması gerekir:
 
-### `npm test`
+- [Node.js](https://nodejs.org/) (>=14.x)
+- [npm](https://www.npmjs.com/) veya [yarn](https://yarnpkg.com/)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Kurulum
 
-### `npm run build`
+1. Projeyi bilgisayarınıza klonlayın:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+   ```bash
+   git clone https://github.com/MusabBayram/movie-case.git
+   cd movie-case
+   ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. Gerekli bağımlılıkları yükleyin:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+   ```bash
+   npm install
+   ```
 
-### `npm run eject`
+3. [OMDb API](https://www.omdbapi.com/) üzerinden bir API anahtarı alın ve `.env` dosyasını oluşturun:
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+   ```plaintext
+   REACT_APP_OMDB_API_KEY=your_api_key_here
+   ```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+4. `.env` dosyasını proje kök dizinine ekleyin.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Kullanım
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Projeyi yerel ortamda başlatmak için şu komutu çalıştırın:
 
-## Learn More
+```bash
+npm start
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Uygulama, [http://localhost:3000](http://localhost:3000) adresinde açılacaktır.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Yapılandırma
+
+OMDb API anahtarını güncellemek veya değiştirmek için `.env` dosyasını düzenleyin:
+
+```plaintext
+REACT_APP_OMDB_API_KEY=your_new_api_key
+```
+
+## Build
+
+Projeyi üretim ortamına hazırlamak için şu komutu çalıştırın:
+
+```bash
+npm run build
+```
+
+Bu komut, projeyi optimize edilmiş bir şekilde `build` klasörüne aktarır.
+
+## Katkıda Bulunma
+
+Katkıda bulunmak isterseniz bir pull request gönderebilir veya bir issue açabilirsiniz.
+
+## Lisans
+
+Bu proje MIT lisansı altında yayınlanmıştır. Daha fazla bilgi için `LICENSE` dosyasına göz atabilirsiniz.
+
+---
+
+# English
+
+Movie Explorer is a React project that uses the OMDb API to fetch information about movies and series. Users can easily find the content they want by searching or using filtering options.
+
+## Features
+
+- **Search Feature**: Search for movies and series by their names.
+- **Filtering**: Filter content by type, year, and IMDb rating.
+- **Dark/Light Theme**: Provides a user-friendly theme toggle option.
+
+## Requirements
+
+To run this project, you need to have the following installed on your computer:
+
+- [Node.js](https://nodejs.org/) (>=14.x)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+
+## Setup
+
+1. Clone the project to your local machine:
+
+   ```bash
+   git clone https://github.com/MusabBayram/movie-case.git
+   cd movie-case
+   ```
+
+2. Install the required dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Get an API key from [OMDb API](https://www.omdbapi.com/) and create a `.env` file:
+
+   ```plaintext
+   REACT_APP_OMDB_API_KEY=your_api_key_here
+   ```
+
+4. Place the `.env` file in the root directory of the project.
+
+## Usage
+
+To start the project in your local environment, run:
+
+```bash
+npm start
+```
+
+The app will open at [http://localhost:3000](http://localhost:3000).
+
+## Configuration
+
+To update or change the OMDb API key, edit the `.env` file:
+
+```plaintext
+REACT_APP_OMDB_API_KEY=your_new_api_key
+```
+
+## Build
+
+To prepare the project for production, run:
+
+```bash
+npm run build
+```
+
+This command optimizes the project and outputs it to the `build` folder.
+
+## Contributing
+
+If you'd like to contribute, you can submit a pull request or open an issue.
+
+## License
+
+This project is licensed under the MIT License. For more information, see the `LICENSE` file.
