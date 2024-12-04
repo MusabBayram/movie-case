@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import omdbApi from '../api/omdbApi';
@@ -16,10 +16,17 @@ import {
   setPage,
 } from '../store/slices/filtersSlice';
 import { Movie } from '../types/Movie';
-import _ from 'lodash'; // Lodash'ı import ediyoruz
+import _ from 'lodash'; 
+import { FormGroup, FormControlLabel, Checkbox } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import Box from '@mui/material/Box';
+import MuiSwitch from '../components/muiSwitch'; 
 import './HomePage.scss';
 
 const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/300x450?text=No+Image';
+  
 
 function useDebounce(value: string, delay: number) {
   const [debouncedValue, setDebouncedValue] = React.useState(value);
@@ -41,6 +48,35 @@ function useDebounce(value: string, delay: number) {
 
 const HomePage: React.FC = () => {
   const dispatch = useDispatch();
+  const [darkMode, setDarkMode] = useState(false);
+
+useEffect(() => {
+  const savedTheme = localStorage.getItem('theme') || 'light'; // Varsayılan 'light'
+  setDarkMode(savedTheme === 'dark');
+  const body = document.body;
+  if (savedTheme === 'dark') {
+    body.classList.add('dark-mode');
+  } else {
+    body.classList.add('light-mode');
+  }
+}, []);
+
+  const handleThemeChange = () => {
+    setDarkMode((prev) => {
+      const newMode = !prev;
+      const body = document.body;
+      if (newMode) {
+        body.classList.remove('light-mode');
+        body.classList.add('dark-mode');
+        localStorage.setItem('theme', 'dark'); 
+      } else {
+        body.classList.remove('dark-mode');
+        body.classList.add('light-mode');
+        localStorage.setItem('theme', 'light');
+      }
+      return newMode;
+    });
+  };
 
   const { movies, totalResults, loading, error } = useSelector(
     (state: RootState) => state.movies
@@ -222,6 +258,9 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="homepage">
+      <div className='mui-switch'>
+        <MuiSwitch checked={darkMode} onChange={handleThemeChange} />
+      </div>
       <h1 className="title">Movie Explorer</h1>
 
       {/* Arama Çubuğu */}
@@ -233,7 +272,7 @@ const HomePage: React.FC = () => {
         className="search-bar"
       />
 
-      {/* Filtreler */}
+      {/* Yıl filtreleme */}
       <div className="filters">
         <input
           type="number"
@@ -243,27 +282,38 @@ const HomePage: React.FC = () => {
           className="year-filter"
         />
 
-        <div className="type-filter">
+        {/* Material-UI Filtreleme */}
+        <FormGroup row>
           {['movie', 'series', 'episode'].map((type) => (
-            <label key={type}>
-              <input
-                type="checkbox"
-                value={type}
-                checked={selectedTypes.includes(type)}
-                onChange={() =>
-                  dispatch(
+            <FormControlLabel
+              key={type}
+              control={
+                <Checkbox
+                  checked={selectedTypes.includes(type)}
+                  onChange={() => 
+                    dispatch(
                     setSelectedTypes(
                       selectedTypes.includes(type)
                         ? _.without(selectedTypes, type)
                         : [...selectedTypes, type]
                     )
                   )
-                }
-              />
-              {_.startCase(type)}
-            </label>
+                  }
+                  sx={{
+                    color: 'var(--text-color)', // Varsayılan checkbox rengi
+                    '&.Mui-checked': {
+                      color: 'var(--primary-color)', // Seçili olduğunda checkbox rengi
+                    },
+                    '& .MuiSvgIcon-root': {
+                      fill: 'var(--primary-color)', // İkonun iç rengi
+                    },
+                  }}
+                />
+              }
+              label={type.charAt(0).toUpperCase() + type.slice(1)}
+            />
           ))}
-        </div>
+        </FormGroup>
 
         {/* Min IMDb Rating filtresi */}
         <input
@@ -280,7 +330,9 @@ const HomePage: React.FC = () => {
 
       {/* Yükleme Göstergesi veya Hata Mesajı */}
       {loading ? (
-        <p>Loading movies...</p>
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
       ) : error ? (
         <p>{error}</p>
       ) : (
@@ -291,8 +343,8 @@ const HomePage: React.FC = () => {
           ) : (
             <div className="movie-grid">
               {movies.map((movie: Movie) => (
-                <div key={movie.imdbID} className="movie-card">
-                  <Link to={`/details/${movie.imdbID}`}>
+                <Link to={`/details/${movie.imdbID}`}>
+                  <div key={movie.imdbID} className="movie-card">
                     <img
                       src={
                         movie.Poster !== 'N/A'
@@ -312,8 +364,8 @@ const HomePage: React.FC = () => {
                     <p className="movie-rating">
                       IMDb: {movie.imdbRating || 'N/A'}
                     </p>
-                  </Link>
-                </div>
+                  </div>
+                </Link>
               ))}
             </div>
           )}
@@ -321,13 +373,13 @@ const HomePage: React.FC = () => {
           {/* Sayfalandırma Kontrolleri */}
           <div className="pagination-controls">
             <button onClick={handlePrevPage} disabled={page === 1}>
-              Previous
+              <ArrowBackIosNewIcon />
             </button>
             <span>
-              Page {page} of {totalPages}
+            {page} / {totalPages}
             </span>
             <button onClick={handleNextPage} disabled={page >= totalPages}>
-              Next
+              <ArrowForwardIosIcon />
             </button>
           </div>
         </>

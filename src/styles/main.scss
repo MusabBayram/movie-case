@@ -2,24 +2,29 @@
 @import './mixins.scss';
 
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: $background-color;
-    color: $text-color;
-    margin: 0;
-    padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+.dark-mode {
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --primary-color: #1e90ff;
+    --secondary-color: #ff6347;
+    --card-background: #1e1e1e;
+    --border-color: #333;
+    --primary-color-light: #006db3; // lighten etkisi ters
+    --primary-color-dark: #004080;
 }
 
-a {
-    color: $primary-color;
-    text-decoration: none;
-
-    &:hover {
-        color: lighten($primary-color, 10%);
-    }
+.light-mode {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --primary-color: #1e90ff;
+    --secondary-color: #ff6347;
+    --card-background: #f0f0f0;
+    --border-color: #ccc;
+    --primary-color-light: #62b8ff; // lighten(#1e90ff, 20%)
+    --primary-color-dark: #006db3; // darken(#1e90ff, 10%)
 }
